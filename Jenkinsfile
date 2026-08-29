@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        jdk   'jdk-21'
-        maven 'maven-3.9'
-    }
 
     environment {
         // ── Optional NVD API key (OWASP runs without it, just slower) ──
