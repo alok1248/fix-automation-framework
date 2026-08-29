@@ -3,12 +3,11 @@ pipeline {
 
 
     environment {
-        // ── Optional NVD API key (OWASP runs without it, just slower) ──
-        // If the Jenkins credential 'nvd-api-key' does not exist, set
-        // NVD_API_KEY to an empty string so the pipeline still proceeds.
-        NVD_CACHE_DIR       = "/var/lib/jenkins/.owasp-nvd-cache"
-        SEMGREP_VENV        = "/var/lib/jenkins/.semgrep-venv"
-        PIP_HOME            = "/var/lib/jenkins/.local"
+        MAVEN_HOME          = "/var/jenkins_home/.maven"
+        PATH                = "/var/jenkins_home/.maven/bin:/var/jenkins_home/.local/bin:/var/lib/jenkins/.local/bin:/var/lib/jenkins/.semgrep-venv/bin:${env.PATH}"
+        NVD_CACHE_DIR       = "/var/jenkins_home/.owasp-nvd-cache"
+        SEMGREP_VENV        = "/var/jenkins_home/.semgrep-venv"
+        PIP_HOME            = "/var/jenkins_home/.local"
         CVSS_FAIL_THRESHOLD = "7"
     }
 
@@ -23,17 +22,23 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                echo "✅ Branch  : ${env.BRANCH_NAME}"
+                echo "✅ Branch  : ${env.BRANCH_NAME ?: 'main'}"
                 echo "✅ PR      : ${env.CHANGE_ID ?: 'N/A'}"
                 echo "✅ PR Title: ${env.CHANGE_TITLE ?: 'N/A'}"
                 echo "✅ Commit  : ${env.GIT_COMMIT}"
                 sh '''
+                    # Auto-install Maven if not present on agent
+                    if ! command -v mvn >/dev/null 2>&1; then
+                        echo "Maven not found. Installing Apache Maven 3.9.6 to $MAVEN_HOME..."
+                        mkdir -p "$MAVEN_HOME"
+                        curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz | tar -xz -C "$MAVEN_HOME" --strip-components=1
+                    fi
+
                     echo "=== Tool versions ==="
                     java -version
                     mvn --version
-                    python3 --version
+                    python3 --version || echo "python3 not found"
                     echo "JAVA_HOME=$JAVA_HOME"
-                    echo "M2_HOME=$M2_HOME"
                 '''
             }
         }
