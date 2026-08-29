@@ -1,0 +1,2 @@
+symbol,side,qty,ordType,tif,price,currency,securityId,securityIdSource,exchange,handlInst,account,senderSubId,deliverToCompId,email
+TCS,1,5,1,0,0,USD,INE123456789,4,NL,1,TEST_ACC,Broker_Simulator2,BTGP,sumit.kumar@btgpactual.com
